@@ -12,6 +12,10 @@ services:
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      # Pin the toolchain — package.json engines uses a range, and the build
+      # needs a Node new enough for the x402 and algokit packages.
+      - key: NODE_VERSION
+        value: "22"
       - key: NODE_ENV
         value: production
       - key: X402_FACILITATOR_URL

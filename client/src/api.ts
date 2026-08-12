@@ -72,6 +72,17 @@ export async function runPayAndCompute(
     body: JSON.stringify(body),
   });
 
+  // Refusals (spend guard, bad request) come back as a single JSON object, not
+  // as a stream. Reading those with the NDJSON reader would parse them as an
+  // unrecognised event and fail silently, so handle them before streaming.
+  if (!res.ok) {
+    const detail = await res
+      .json()
+      .then((body: { error?: string }) => body.error)
+      .catch(() => undefined);
+    throw new Error(detail ?? `Request failed with status ${res.status}.`);
+  }
+
   if (!res.body) throw new Error("Streaming is not supported by this browser.");
 
   const reader = res.body.getReader();
