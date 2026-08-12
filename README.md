@@ -102,6 +102,67 @@ The Vite dev server proxies `/api` to the backend, so the browser stays same-ori
 
 ---
 
+## Deploy
+
+The whole app ships as **one service**: the server serves the built frontend, so the browser calls `/api` on its own origin — no CORS, no proxy, one URL.
+
+```bash
+npm run build     # installs both packages and builds the client
+npm start         # serves API + UI on $PORT (default 4021)
+```
+
+It must run as a **long-lived server**, not serverless: the job store, the stage event bus and the NDJSON progress stream are all in-process and do not survive per-request invocation.
+
+### 1. Push to GitHub
+
+```bash
+cd computex
+gh repo create computex --private --source=. --push
+# or: git remote add origin git@github.com:<you>/computex.git && git push -u origin main
+```
+
+### 2. Pick a host
+
+**Render** — `render.yaml` is a ready blueprint. *New → Blueprint*, point it at the repo, and it prompts for the secrets marked `sync: false`.
+
+**Railway** — `railway.json` builds from the `Dockerfile`.
+```bash
+railway init && railway up
+railway variables --set PAYEE_ADDRESS=... --set PAYER_MNEMONIC="..."
+```
+
+**Fly.io** — `fly.toml` is configured; keep `min_machines_running = 1`.
+```bash
+fly launch --no-deploy
+fly secrets set PAYEE_ADDRESS=... PAYER_MNEMONIC="..."
+fly deploy
+```
+
+**Any Docker host** —
+```bash
+docker build -t computex .
+docker run -p 8080:8080 --env-file .env computex
+```
+
+### 3. Set environment variables on the host
+
+Set `PAYEE_ADDRESS` and `PAYER_MNEMONIC` **as host secrets**, never in the repo. `PORT` is injected by the platform. Everything else has a working default.
+
+### Protecting the shared payer
+
+`/api/pay-and-compute` signs USDC with the server's own key, so on a public URL it is an open faucet on your testnet balance. Three guards apply, all tunable:
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `MAX_JOB_PRICE_USDC` | `0.50` | Refuses any single job quoting more |
+| `RATE_LIMIT_MAX_JOBS` | `10` | Paid jobs per client per window |
+| `RATE_LIMIT_WINDOW_MS` | `900000` | Window length (15 min) |
+| `DEMO_ACCESS_TOKEN` | unset | When set, requires it in the `x-computex-token` header |
+
+Fund the deployed payer with only what the demo needs — a few USDC is plenty at these prices. These guards limit casual abuse; they are not an authentication boundary. `POST /api/compute` itself stays open by design: that is the x402 endpoint, and anyone paying it uses **their own** wallet.
+
+---
+
 ## Testing
 
 ```bash
