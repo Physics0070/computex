@@ -1,0 +1,41 @@
+# Fly.io config. Run `fly launch --no-deploy` first to claim an app name,
+# then set secrets and deploy:
+#
+#   fly secrets set PAYEE_ADDRESS=... PAYER_MNEMONIC="..."
+#   fly deploy
+#
+# Keep min_machines_running at 1: the job store and stage event bus live in
+# process memory, so a cold start loses in-flight job history.
+
+app = "computex"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  NODE_ENV = "production"
+  X402_FACILITATOR_URL = "https://facilitator.goplausible.xyz"
+  ALGOD_URL = "https://testnet-api.algonode.cloud"
+  INDEXER_URL = "https://testnet-idx.algonode.cloud"
+  MAX_JOB_PRICE_USDC = "0.50"
+  RATE_LIMIT_MAX_JOBS = "10"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
