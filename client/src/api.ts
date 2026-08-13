@@ -17,14 +17,32 @@ import type {
   Stats,
 } from "./types";
 
+/**
+ * Where the API lives.
+ *
+ * Empty by default, which yields same-origin relative paths — correct both in
+ * dev (Vite proxies /api to the backend) and in single-service deployments
+ * (the server serves this bundle). Set VITE_API_BASE_URL at build time when the
+ * frontend is hosted separately, e.g. a Netlify frontend against a Render API:
+ *
+ *   VITE_API_BASE_URL=https://computex.onrender.com
+ *
+ * The backend must then list this site's origin in CORS_ORIGINS. Baked in at
+ * build time by Vite, so changing it means rebuilding, not just restarting.
+ */
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+
+/** Resolves an API path against the configured backend. */
+export const apiUrl = (path: string): string => `${API_BASE}${path}`;
+
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(path);
+  const res = await fetch(apiUrl(path));
   if (!res.ok) throw new Error(`${path} responded ${res.status}`);
   return (await res.json()) as T;
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -66,7 +84,7 @@ export async function runPayAndCompute(
   body: Record<string, unknown>,
   onEvent: (event: PayerEvent) => void,
 ): Promise<ComputeResponse | null> {
-  const res = await fetch("/api/pay-and-compute", {
+  const res = await fetch(apiUrl("/api/pay-and-compute"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

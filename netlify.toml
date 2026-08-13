@@ -1,0 +1,25 @@
+# Netlify — frontend only.
+#
+# The API lives elsewhere (Render). This site is a static build of client/ that
+# calls the backend cross-origin, so two settings have to agree:
+#
+#   here    VITE_API_BASE_URL = https://<your-service>.onrender.com
+#   Render  CORS_ORIGINS      = https://<this-site>.netlify.app
+#
+# VITE_API_BASE_URL is read by Vite at BUILD time and baked into the bundle, so
+# changing it requires a redeploy of this site, not just a restart. It is set in
+# the Netlify UI rather than here because the Render URL is not known until that
+# service exists.
+#
+# Note the backend also serves its own copy of this frontend at the Render URL —
+# same code, same-origin, no CORS. Useful as a fallback if this site misbehaves.
+
+[build]
+  # Everything below is relative to client/, so `publish = "dist"` is client/dist.
+  base = "client"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # package.json engines allows a range; pin it so the build matches local.
+  NODE_VERSION = "22"

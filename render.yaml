@@ -25,14 +25,24 @@ services:
       - key: INDEXER_URL
         value: https://testnet-idx.algonode.cloud
       # Per-job ceiling and rate limit for the shared demo payer.
+      # 5.00 admits every prompt in the README demo path, including video
+      # upscale and fine-tune. It also means ~4 jobs can drain a 20 USDC payer,
+      # and the rate limit keys off a spoofable x-forwarded-for — so keep the
+      # deployed payer funded with only what the demo needs.
       - key: MAX_JOB_PRICE_USDC
-        value: "0.50"
+        value: "5.00"
       - key: RATE_LIMIT_MAX_JOBS
         value: "10"
       # --- set these in the dashboard ---
       - key: PAYEE_ADDRESS
         sync: false
       - key: PAYER_MNEMONIC
+        sync: false
+      # Origin of the separately-hosted frontend, e.g. https://computex.netlify.app
+      # Required only for the split deploy: without it the browser's cross-origin
+      # calls from Netlify are refused. Harmless when the Render URL is used
+      # directly, since that path is same-origin.
+      - key: CORS_ORIGINS
         sync: false
       # Optional: require x-computex-token on the payer proxy.
       - key: DEMO_ACCESS_TOKEN
