@@ -9,6 +9,7 @@
  */
 import { randomUUID } from "node:crypto";
 import type { Quote } from "./pricing.js";
+import { reserveUnit } from "./providers.js";
 
 export type StageName =
   | "payment-verified"
@@ -142,47 +143,56 @@ export async function runSimulatedJob(
   );
   await sleep(400);
 
-  emit(
-    "gpu-allocated",
-    "GPU allocated",
-    `Allocated 1x ${DEVICE_LABELS[request.gpu] ?? request.gpu} (simulated).`,
-  );
-  await sleep(600);
+  // Held for as long as the job runs, so the marketplace shows this GPU as one
+  // unit busier while it works. Released in `finally` — a throw between here and
+  // the end would otherwise leak capacity until the next restart.
+  const release = reserveUnit(request.gpu);
 
-  emit(
-    "job-running",
-    "Job running",
-    `Running ${request.workload} on ${request.model} for ${request.units} ${quote.unit}.`,
-  );
+  try {
+    emit(
+      "gpu-allocated",
+      "GPU allocated",
+      `Allocated 1x ${DEVICE_LABELS[request.gpu] ?? request.gpu} (simulated).`,
+    );
+    await sleep(600);
 
-  // Roughly track the quote, but keep the demo between 1.5s and 5s.
-  const runMs = Math.min(Math.max(quote.estimatedSeconds * 200, 1500), 5000);
-  await sleep(runMs);
+    emit(
+      "job-running",
+      "Job running",
+      `Running ${request.workload} on ${request.model} for ${request.units} ${quote.unit}.`,
+    );
 
-  const artifacts = Array.from({ length: Math.min(request.units, 8) }, (_, i) => ({
-    id: `${jobId}_${i}`,
-    kind: ARTIFACT_KIND[request.workload] ?? "application/octet-stream",
-    uri: `simulated://computex/${jobId}/${i}`,
-    bytes: 180_000 + Math.floor(Math.random() * 900_000),
-  }));
+    // Roughly track the quote, but keep the demo between 1.5s and 5s.
+    const runMs = Math.min(Math.max(quote.estimatedSeconds * 200, 1500), 5000);
+    await sleep(runMs);
 
-  record.result = {
-    simulated: true,
-    artifacts,
-    metrics: {
-      gpuSecondsUsed: Math.round((runMs / 1000 + quote.estimatedSeconds) * 10) / 10,
-      device: DEVICE_LABELS[request.gpu] ?? request.gpu,
-      vramPeakMb: 4_200 + Math.floor(Math.random() * 8_000),
-      throughput: `${(request.units / Math.max(quote.estimatedSeconds, 0.1)).toFixed(2)} ${quote.unit}/s`,
-    },
-  };
-  record.status = "completed";
+    const artifacts = Array.from({ length: Math.min(request.units, 8) }, (_, i) => ({
+      id: `${jobId}_${i}`,
+      kind: ARTIFACT_KIND[request.workload] ?? "application/octet-stream",
+      uri: `simulated://computex/${jobId}/${i}`,
+      bytes: 180_000 + Math.floor(Math.random() * 900_000),
+    }));
 
-  emit(
-    "job-completed",
-    "Job completed",
-    `Produced ${artifacts.length} simulated artifact(s) in ${(runMs / 1000).toFixed(1)}s.`,
-  );
+    record.result = {
+      simulated: true,
+      artifacts,
+      metrics: {
+        gpuSecondsUsed: Math.round((runMs / 1000 + quote.estimatedSeconds) * 10) / 10,
+        device: DEVICE_LABELS[request.gpu] ?? request.gpu,
+        vramPeakMb: 4_200 + Math.floor(Math.random() * 8_000),
+        throughput: `${(request.units / Math.max(quote.estimatedSeconds, 0.1)).toFixed(2)} ${quote.unit}/s`,
+      },
+    };
+    record.status = "completed";
 
-  return record;
+    emit(
+      "job-completed",
+      "Job completed",
+      `Produced ${artifacts.length} simulated artifact(s) in ${(runMs / 1000).toFixed(1)}s.`,
+    );
+
+    return record;
+  } finally {
+    release();
+  }
 }

@@ -39,6 +39,7 @@ explorer: https://lora.algokit.io/testnet/transaction/JMPNYDYAT2FQGBRMJXLSFAJZZJ
 | Server serves the built UI on `/` (single-service mode) | 200 text/html |
 | Vite dev on 5173 + `/api` proxy to 4021 | Both 200 |
 | Job history / stats / provider revenue accumulate across jobs | 3 completed, 3 settled, $0.288 total |
+| Live GPU availability (new this session) | RTX 4090 6/8 → 5/8 during a job → 6/8 after; 4 concurrent jobs flip the L40S to `0/4 busy`, then back |
 | Both Testnet accounts funded + opted into USDC | Done |
 | Repo in sync | `main` @ `beb6b0a`, only `HANDOFF.md` untracked |
 
@@ -84,7 +85,43 @@ At demo prices (~$0.06/job) the payer balance is good for hundreds of runs.
 
 ---
 
-## 4. Changes made this session
+## 4. De-hardcoding: what changed and what is left
+
+**Done — GPU availability is now live.** It used to be a frozen constant: `PROVIDERS` in
+[server/src/providers.ts](server/src/providers.ts) was a `const`, nothing mutated it, so `idleUnits: 6`
+stayed 6 no matter how many jobs ran. Worse, availability is a **weighted scoring dimension** in
+[server/src/recommend.ts](server/src/recommend.ts) (0.10–0.15 by priority), so one of the four ranking
+signals could never affect a recommendation.
+
+Now an `inUse` map tracks units held by running jobs; `listProviders()`/`getProvider()` return the
+baseline minus that. [server/src/compute.ts](server/src/compute.ts) takes a unit via `reserveUnit()`
+and releases it in a `finally`, so a throw mid-job cannot leak capacity. Reservation is deliberately
+**not** a gate — the caller has already paid, and refusing work over fictional capacity would cancel a
+verified payment. Occupancy past the baseline is allowed and the display clamps at `0 idle / busy`.
+
+Every consumer (marketplace, stats, recommendation, quote snapshot) reads through those two functions,
+so nothing else needed changing.
+
+### Still hardcoded, deliberately
+
+- **Protocol constants** — testnet CAIP-2 id, USDC ASA `10458941`, explorer URLs in
+  [server/src/env.ts](server/src/env.ts). Network facts, not config.
+- **The rate card** — `basePriceUsd`, `priceFactor`, `secondsPerUnit` in
+  [server/src/pricing.ts](server/src/pricing.ts). A product decision; every marketplace posts prices.
+- **The Agent Mode regex parser** ([server/src/agent.ts](server/src/agent.ts)). Keep it. On stage,
+  deterministic beats smart: no API key, no latency, no nondeterminism, and it is what produces the
+  per-field provenance trail the UI shows. An LLM would lose that.
+
+### Still hardcoded, worth fixing
+
+- **`baselineJobsCompleted: 1284` / `baselineRevenueUsd: 142.37`** are invented, and
+  [server/src/index.ts](server/src/index.ts) adds *real* session revenue on top — so the Providers page
+  blends fabricated history with genuine settlement. Either label the split in the UI or drop the baselines.
+- **In-memory job store** — see Open, above.
+
+---
+
+## 5. Changes made in the earlier session
 
 1. **Moved the project.** Copied `C:\Users\Soham\computex` → `D:\SOHAM ALL\hackathons\Algoverse`
    (144 files, `node_modules` excluded). The original was left in place and is now stale.
@@ -113,7 +150,7 @@ At demo prices (~$0.06/job) the payer balance is good for hundreds of runs.
 
 ---
 
-## 5. Failed attempts — do not repeat
+## 6. Failed attempts — do not repeat
 
 1. **`git push --force` was blocked by the permission classifier.** Do not retry it. The working
    approach was `git merge origin/main --allow-unrelated-histories`, which needs no force and
@@ -141,7 +178,7 @@ At demo prices (~$0.06/job) the payer balance is good for hundreds of runs.
 
 ---
 
-## 6. Next steps
+## 7. Next steps
 
 **Immediately:**
 1. ~~Restart the server so the new guard limits take effect.~~ Done — old process killed, restarted
