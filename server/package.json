@@ -11,6 +11,7 @@
     "check:payer": "tsx scripts/check-payer.ts",
     "keygen": "tsx scripts/keygen.ts",
     "test:flow": "tsx scripts/test-flow.ts",
+    "tx:log": "tsx scripts/tx-history.ts",
     "optin": "tsx scripts/optin.ts",
     "scenarios": "tsx scripts/dev-scenarios.ts",
     "simulate": "tsx scripts/dev-simulate.ts"
