@@ -9,7 +9,7 @@ This file is generated, never hand-edited — regenerate it with:
 cd server && npm run tx:log
 ```
 
-Generated 2026-08-13 11:18:02 UTC from `https://testnet-idx.algonode.cloud`.
+Generated 2026-08-13 11:23:34 UTC from `https://testnet-idx.algonode.cloud`.
 
 ## Accounts
 
@@ -24,9 +24,9 @@ Asset: USDC, ASA `10458941` (6 decimals).
 
 | | |
 | --- | --- |
-| Job payments settled | **20** |
-| Total settled to the provider | **1.096000 USDC** |
-| USDC transactions on record | 23 |
+| Job payments settled | **23** |
+| Total settled to the provider | **1.276000 USDC** |
+| USDC transactions on record | 26 |
 
 ## Transactions
 
@@ -58,6 +58,9 @@ can be verified without trusting this file.
 | 21 | 2026-08-13 11:13:27 | 66269584 | Job payment | 0.060000 | payer | payee | [`33KGO5…VAHQ`](https://lora.algokit.io/testnet/transaction/33KGO5S37ZSI6SKV7FFETQMDNUZ2YSV7UFIQLV2PSFLBACQNVAHQ) |
 | 22 | 2026-08-13 11:17:11 | 66269667 | Job payment | 0.060000 | payer | payee | [`LMEKU4…4DWA`](https://lora.algokit.io/testnet/transaction/LMEKU42PEN2M5XWLSPDZ3F4FOVSCYHJ42ABNSATV6YVXVRJL4DWA) |
 | 23 | 2026-08-13 11:17:30 | 66269674 | Job payment | 0.060000 | payer | payee | [`B6IDTV…RPBQ`](https://lora.algokit.io/testnet/transaction/B6IDTVICJDNCAI7RHVH4UKT6PBSCIYHLIZB5GLFRZB7WA356RPBQ) |
+| 24 | 2026-08-13 11:21:34 | 66269765 | Job payment | 0.060000 | payer | payee | [`5J7HDT…MHSQ`](https://lora.algokit.io/testnet/transaction/5J7HDTCBDI3JLUFSGBBB7GEI75YLFUYVMLCBOPX7KLCNKS3QMHSQ) |
+| 25 | 2026-08-13 11:22:09 | 66269778 | Job payment | 0.060000 | payer | payee | [`GQNNT5…3CPA`](https://lora.algokit.io/testnet/transaction/GQNNT5JRQMSYLNPU2GX735N6AFG6TG5ND6TMOHHDESFADJJG3CPA) |
+| 26 | 2026-08-13 11:22:50 | 66269793 | Job payment | 0.060000 | payer | payee | [`RWAMUF…XLMQ`](https://lora.algokit.io/testnet/transaction/RWAMUFSVAQVPIIIO62SU54NTOH75RPCVV5Z7S72HGZX4V6T7XLMQ) |
 
 ## Full transaction ids
 
@@ -85,4 +88,7 @@ can be verified without trusting this file.
 66269584  Job payment   0.060000 USDC  33KGO5S37ZSI6SKV7FFETQMDNUZ2YSV7UFIQLV2PSFLBACQNVAHQ
 66269667  Job payment   0.060000 USDC  LMEKU42PEN2M5XWLSPDZ3F4FOVSCYHJ42ABNSATV6YVXVRJL4DWA
 66269674  Job payment   0.060000 USDC  B6IDTVICJDNCAI7RHVH4UKT6PBSCIYHLIZB5GLFRZB7WA356RPBQ
+66269765  Job payment   0.060000 USDC  5J7HDTCBDI3JLUFSGBBB7GEI75YLFUYVMLCBOPX7KLCNKS3QMHSQ
+66269778  Job payment   0.060000 USDC  GQNNT5JRQMSYLNPU2GX735N6AFG6TG5ND6TMOHHDESFADJJG3CPA
+66269793  Job payment   0.060000 USDC  RWAMUFSVAQVPIIIO62SU54NTOH75RPCVV5Z7S72HGZX4V6T7XLMQ
 ```
