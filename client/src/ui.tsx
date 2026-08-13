@@ -12,7 +12,7 @@ export function Card({
 }) {
   return (
     <Tag
-      className={`rounded-xl border border-line bg-surface-1/80 backdrop-blur-sm ${className}`}
+      className={`surface-card rounded-2xl border border-line bg-surface-1/85 backdrop-blur-sm ${className}`}
     >
       {children}
     </Tag>
@@ -29,7 +29,7 @@ export function CardHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-line-soft px-5 py-4">
+    <div className="flex items-start justify-between gap-4 border-b border-line-soft px-6 py-5">
       <div className="min-w-0">
         <h2 className="text-sm font-semibold tracking-tight text-hi">{title}</h2>
         {subtitle && <p className="mt-0.5 text-xs text-low">{subtitle}</p>}
@@ -51,10 +51,11 @@ export function StatTile({
   accent?: boolean;
 }) {
   return (
-    <Card className="p-5">
+    <Card className="group relative min-w-0 overflow-hidden p-6">
+      {accent && <span className="absolute inset-x-0 top-0 h-px bg-brand/70" />}
       <p className="text-[11px] font-medium uppercase tracking-wider text-low">{label}</p>
       <p
-        className={`mt-2 text-2xl font-semibold tabular-nums tracking-tight ${
+      className={`mt-2 text-3xl font-bold tabular-nums tracking-[-0.05em] ${
           accent ? "text-brand-soft" : "text-hi"
         }`}
       >
@@ -117,7 +118,7 @@ export function Button({
   const base =
     "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-45";
   const styles = {
-    primary: "bg-brand text-white hover:bg-brand/85 shadow-lg shadow-brand/20",
+    primary: "bg-brand text-surface-0 hover:bg-brand-soft shadow-lg shadow-brand/20",
     outline: "border border-line bg-surface-2 text-hi hover:border-brand/50 hover:bg-surface-3",
     ghost: "text-mid hover:bg-surface-2 hover:text-hi",
   }[variant];
@@ -147,7 +148,7 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-lg border border-line bg-surface-2 px-3 py-2.5 text-sm text-hi outline-none transition placeholder:text-low focus:border-brand/60 focus:ring-2 focus:ring-brand/20";
+  "w-full rounded-xl border border-line bg-surface-0/65 px-3.5 py-3 text-sm text-hi outline-none transition placeholder:text-low focus:border-brand/60 focus:ring-2 focus:ring-brand/20";
 
 export function Mono({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <span className={`font-mono text-[12px] ${className}`}>{children}</span>;

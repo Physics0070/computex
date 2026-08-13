@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 /**
@@ -5,25 +6,25 @@
  * Restrained palette: one accent, semantic status colours, everything else neutral.
  */
 @theme {
-  --color-surface-0: #090b10;
-  --color-surface-1: #0e1118;
-  --color-surface-2: #141926;
-  --color-surface-3: #1b2130;
-  --color-line: #232b3b;
-  --color-line-soft: #1a2130;
+  --color-surface-0: #07121c;
+  --color-surface-1: #0b1925;
+  --color-surface-2: #102231;
+  --color-surface-3: #163044;
+  --color-line: #1f384a;
+  --color-line-soft: #162d3e;
 
-  --color-hi: #e8ebf2;
-  --color-mid: #98a2b6;
-  --color-low: #64708a;
+  --color-hi: #f3f9fb;
+  --color-mid: #b0c2ce;
+  --color-low: #718a9b;
 
-  --color-brand: #6366f1;
-  --color-brand-soft: #a5b4fc;
-  --color-ok: #10b981;
-  --color-warn: #f59e0b;
-  --color-bad: #f43f5e;
+  --color-brand: #5de2c2;
+  --color-brand-soft: #a8ffe9;
+  --color-ok: #5de2c2;
+  --color-warn: #f6c660;
+  --color-bad: #ff718b;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 
 html {
@@ -31,7 +32,11 @@ html {
 }
 
 body {
-  background-color: var(--color-surface-0);
+  min-width: 320px;
+  background:
+    radial-gradient(780px 490px at 96% -15%, rgba(93, 226, 194, 0.18), transparent 68%),
+    radial-gradient(740px 520px at 6% 110%, rgba(66, 112, 168, 0.17), transparent 64%),
+    var(--color-surface-0);
   color: var(--color-hi);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -44,11 +49,24 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image:
-    linear-gradient(to right, rgba(99, 102, 241, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(99, 102, 241, 0.035) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, black 20%, transparent 75%);
+  background-image: linear-gradient(to right, rgba(168, 255, 233, 0.026) 1px, transparent 1px), linear-gradient(to bottom, rgba(168, 255, 233, 0.026) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 92% 68% at 50% 0%, black 8%, transparent 82%);
+}
+
+::selection { background: rgba(93, 226, 194, 0.32); color: #07121c; }
+
+.app-sidebar { box-shadow: 18px 0 55px rgba(1, 8, 15, 0.26); background: linear-gradient(180deg, rgba(9, 25, 37, 0.98), rgba(6, 16, 25, 0.98)); }
+.app-topbar { box-shadow: 0 12px 28px rgba(1, 8, 15, 0.13); }
+.surface-card { box-shadow: 0 18px 44px rgba(0, 0, 0, 0.14); }
+.surface-card:hover { border-color: rgba(168, 255, 233, 0.3); transform: translateY(-2px); box-shadow: 0 24px 54px rgba(0, 0, 0, 0.18); }
+.hero-orbit { position: relative; isolation: isolate; overflow: hidden; box-shadow: 0 26px 60px rgba(2, 15, 24, .28); }
+.hero-orbit::after { content: ""; position: absolute; width: 460px; height: 460px; top: -285px; right: -100px; border: 1px solid rgba(168,255,233,.2); border-radius: 999px; box-shadow: 0 0 0 48px rgba(168,255,233,.025), 0 0 0 96px rgba(168,255,233,.018); pointer-events: none; }
+.hero-orbit > * { position: relative; z-index: 1; }
+.brand-mark { box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 10px 26px rgba(93,226,194,.24); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .surface-card { transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
 }
 
 ::-webkit-scrollbar {

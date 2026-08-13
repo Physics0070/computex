@@ -60,11 +60,17 @@ export function NewJob({
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[380px_minmax(0,1fr)]">
-      <Card className="h-fit">
+    <div className="space-y-6">
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-soft">New workload</p>
+        <h2 className="mt-2 text-3xl font-bold tracking-[-0.055em] text-hi">Describe the output.<br />We’ll price the execution.</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-mid">Choose your requirements, then compare every eligible GPU before committing to a payment.</p>
+      </div>
+    <div className="grid gap-6 lg:grid-cols-[400px_minmax(0,1fr)]">
+      <Card className="h-fit overflow-hidden">
         <CardHeader title="Workload" subtitle="Describe the job — ComputeX picks the GPU" />
         <form
-          className="space-y-4 p-5"
+          className="space-y-5 p-6"
           onSubmit={(e) => {
             e.preventDefault();
             void findGpu();
@@ -121,13 +127,13 @@ export function NewJob({
           </Field>
 
           <Field label="Priority">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {(catalog?.priorities ?? (["balanced", "speed", "cost", "reliability"] as Priority[])).map((p) => (
                 <button
                   key={p}
                   type="button"
                   onClick={() => setPriority(p)}
-                  className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                  className={`rounded-xl border px-3 py-2.5 text-xs font-semibold transition ${
                     priority === p
                       ? "border-brand/60 bg-brand/12 text-brand-soft"
                       : "border-line bg-surface-2 text-mid hover:border-line/80 hover:text-hi"
@@ -150,9 +156,9 @@ export function NewJob({
       <div className="space-y-5">
         {!recommendation && (
           <Card>
-            <div className="px-5 py-16 text-center">
-              <p className="text-sm text-mid">No recommendation yet</p>
-              <p className="mx-auto mt-1 max-w-sm text-xs text-low">
+            <div className="px-7 py-20 text-center">
+              <p className="text-lg font-semibold text-hi">Ready when you are</p>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-low">
                 Describe the workload and ComputeX will score every GPU in the marketplace on
                 compatibility, price, speed, reliability and availability.
               </p>
@@ -176,6 +182,7 @@ export function NewJob({
           />
         )}
       </div>
+    </div>
     </div>
   );
 }

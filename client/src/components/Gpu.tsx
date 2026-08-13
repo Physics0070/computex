@@ -21,7 +21,7 @@ export function GpuCard({
     100;
 
   return (
-    <Card className={`p-5 transition ${selected ? "border-brand/60 ring-1 ring-brand/25" : "hover:border-line/80"}`}>
+    <Card className={`p-5 transition ${selected ? "border-brand/60 ring-1 ring-brand/25" : "hover:border-brand/35"}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-sm font-semibold text-hi">{provider.gpu}</h3>

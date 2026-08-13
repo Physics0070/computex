@@ -67,33 +67,37 @@ export default function App() {
   };
 
   return (
-    <div className="relative z-10 flex min-h-screen">
-      {/* Sidebar */}
+    <div className="relative z-10 min-h-screen">
+      {/* Navigation drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 shrink-0 border-r border-line bg-surface-1/95 backdrop-blur transition-transform lg:static lg:translate-x-0 ${
+        className={`app-sidebar fixed inset-y-0 left-0 z-40 w-[292px] border-r border-line backdrop-blur-xl transition-transform duration-300 ${
           navOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-16 items-center gap-2.5 border-b border-line px-5">
+        <div className="flex h-20 items-center gap-3 border-b border-line px-5">
           <LogoMark />
           <div>
-            <p className="text-sm font-semibold tracking-tight text-hi">ComputeX</p>
-            <p className="text-[10px] uppercase tracking-wider text-low">GPU marketplace</p>
+            <p className="text-base font-bold tracking-[-0.04em] text-hi">ComputeX</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-low">Compute marketplace</p>
           </div>
         </div>
 
-        <nav className="space-y-1 p-3">
+        <div className="flex items-center justify-between px-5 pt-7">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-low">Workspace</p>
+          <button onClick={() => setNavOpen(false)} className="rounded-lg p-1 text-low hover:bg-surface-2 hover:text-hi" aria-label="Close menu">×</button>
+        </div>
+        <nav className="mt-2 space-y-1 px-3">
           {NAV.map((item) => (
             <button
               key={item.key}
               onClick={() => go(item.key)}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 view === item.key
-                  ? "bg-brand/12 text-brand-soft"
-                  : "text-mid hover:bg-surface-2 hover:text-hi"
+                  ? "bg-brand text-surface-0 shadow-lg shadow-brand/10"
+                  : "text-mid hover:bg-surface-2/85 hover:text-hi"
               }`}
             >
-              <span className={view === item.key ? "text-brand-soft" : "text-low"}>{item.icon}</span>
+              <span className={view === item.key ? "text-surface-0" : "text-low"}>{item.icon}</span>
               {item.label}
             </button>
           ))}
@@ -116,25 +120,27 @@ export default function App() {
 
       {navOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          className="fixed inset-0 z-30 bg-surface-0/75 backdrop-blur-sm"
           onClick={() => setNavOpen(false)}
           aria-hidden
         />
       )}
 
       {/* Main */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface-0/80 px-4 backdrop-blur sm:px-6">
+      <div className="flex min-w-0 flex-col">
+        <header className="app-topbar sticky top-0 z-20 flex h-20 items-center gap-3 border-b border-line bg-surface-0/75 px-5 backdrop-blur-xl sm:px-8">
           <button
             onClick={() => setNavOpen((v) => !v)}
-            className="rounded-lg border border-line p-2 text-mid lg:hidden"
-            aria-label="Toggle navigation"
+            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface-1 px-3 py-2 text-xs font-semibold text-mid transition hover:border-brand/50 hover:text-hi"
+            aria-label="Open menu"
           >
             <MenuIcon />
+            <span>Menu</span>
           </button>
 
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-sm font-semibold text-hi">
+            <p className="hidden text-[10px] font-semibold uppercase tracking-[0.17em] text-low sm:block">ComputeX</p>
+            <h1 className="truncate text-lg font-bold tracking-[-0.04em] text-hi">
               {NAV.find((n) => n.key === view)?.label}
             </h1>
           </div>
@@ -148,7 +154,7 @@ export default function App() {
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 p-4 sm:p-6">
+        <main className="mx-auto min-w-0 max-w-[1480px] p-5 sm:p-8">
           {offline && (
             <div className="mb-5 rounded-lg border border-bad/40 bg-bad/10 p-4 text-sm text-bad">
               Cannot reach the ComputeX backend. Start it with{" "}
@@ -191,7 +197,7 @@ export default function App() {
 
 function LogoMark() {
   return (
-    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/15 text-brand-soft">
+    <span className="brand-mark flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-surface-0">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="4" y="4" width="16" height="16" rx="2" />
         <rect x="9" y="9" width="6" height="6" />
