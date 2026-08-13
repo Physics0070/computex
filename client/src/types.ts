@@ -148,6 +148,8 @@ export interface Health {
   payTo: string;
   computeMode: string;
   paymentMode: string;
+  /** Algod node the browser signs against when paying from its own wallet. */
+  algodUrl?: string;
 }
 
 /** One line of the NDJSON stream from POST /api/pay-and-compute. */

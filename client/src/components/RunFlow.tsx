@@ -11,6 +11,8 @@
  */
 import { useState } from "react";
 import { runPayAndCompute } from "../api";
+import { runWalletPayAndCompute } from "../walletPay";
+import { useWallet } from "../walletContext";
 import type { Candidate, ComputeResponse, PayerEvent, RecommendRequest } from "../types";
 import { Badge, Button, Card, CardHeader, Dot, Mono, shortId } from "../ui";
 
@@ -49,6 +51,7 @@ export function RunFlow({
   candidate: Candidate;
   onFinished: () => void;
 }) {
+  const { session } = useWallet();
   const [running, setRunning] = useState(false);
   const [states, setStates] = useState<Record<StepKey, StepState>>(initialStates());
   const [log, setLog] = useState<PayerEvent[]>([]);
@@ -77,11 +80,18 @@ export function RunFlow({
       [UNIT_FIELD[requirements.workload] ?? "units"]: requirements.units,
     };
 
+    const onEvent = (event: PayerEvent) => {
+      setLog((prev) => [...prev, event]);
+      applyEvent(event);
+    };
+
     try {
-      const final = await runPayAndCompute(body, (event) => {
-        setLog((prev) => [...prev, event]);
-        applyEvent(event);
-      });
+      // A connected wallet pays for its own job; otherwise the server's shared
+      // demo payer covers it. Both emit the same events, so everything below
+      // this line is identical for the two paths.
+      const final = session
+        ? await runWalletPayAndCompute(session.signer, body, onEvent)
+        : await runPayAndCompute(body, onEvent);
       if (final) {
         setResult(final);
         mark("settled", final.payment?.status === "settled" ? "done" : "failed");
@@ -171,6 +181,24 @@ export function RunFlow({
           <p className="mt-3 text-xs text-low">
             Pays {candidate.estimatedCostUsdc} USDC on Algorand Testnet via x402, then runs the
             simulated job. GPU execution is simulated; the payment is real.
+          </p>
+          {/* Which account is charged is the whole point of connecting a wallet,
+              so say it plainly next to the button rather than leaving it implied. */}
+          <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
+            {session ? (
+              <>
+                <Dot tone="ok" />
+                <span className="text-mid">Charged to your Pera wallet</span>
+                <Mono className="text-low">{shortId(session.address, 6, 4)}</Mono>
+                <span className="text-low">— you approve it in the app.</span>
+              </>
+            ) : (
+              <>
+                <Dot tone="warn" />
+                <span className="text-mid">Charged to the shared demo payer.</span>
+                <span className="text-low">Connect Pera to pay from your own wallet.</span>
+              </>
+            )}
           </p>
         </div>
       </Card>

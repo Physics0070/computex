@@ -51,6 +51,9 @@ console.log(`[x402] Algorand network: ${network}`);
 console.log(`[x402] Facilitator:      ${env.facilitatorUrl}`);
 console.log(`[x402] Paying to:        ${env.payeeAddress}`);
 
+/** How long an unused trace stream is held open before it is closed. */
+const TRACE_TIMEOUT_MS = 120_000;
+
 const app = new Hono();
 
 app.use("*", cors({ origin: env.corsOrigins, allowHeaders: ["Content-Type"] }));
@@ -70,6 +73,9 @@ app.get("/api/health", (c) =>
     asset: { assetId: USDC_TESTNET_ASA_ID, symbol: "USDC", decimals: 6 },
     computeMode: "simulated",
     paymentMode: "real",
+    // A browser paying from its own wallet builds the transaction group itself,
+    // so it needs the same node this server uses. Public endpoint, no secret.
+    algodUrl: env.algodUrl,
     timestamp: new Date().toISOString(),
   }),
 );
@@ -174,6 +180,51 @@ app.get("/api/jobs/:jobId", (c) => {
   const job = getJob(c.req.param("jobId"));
   if (!job) return c.json({ success: false, error: "Job not found." }, 404);
   return c.json({ success: true, job });
+});
+
+/**
+ * Live stage stream for a caller paying from their own wallet.
+ *
+ * The x402 middleware buffers the protected route's body so it can settle after
+ * the handler returns, which makes streaming progress out of /api/compute
+ * impossible (see src/bus.ts). The dev payer proxy gets around that by relaying
+ * from the in-process bus; a browser holding its own key needs the same relay,
+ * so it opens this stream first and sends the trace id on its POST.
+ *
+ * Ends when the job reports completion, when the client disconnects, or after
+ * TRACE_TIMEOUT_MS so an abandoned trace cannot hold a connection open forever.
+ */
+app.get("/api/trace/:traceId", (c) => {
+  const traceId = c.req.param("traceId");
+
+  c.header("Content-Type", "application/x-ndjson; charset=utf-8");
+  c.header("Cache-Control", "no-store");
+  c.header("X-Accel-Buffering", "no");
+
+  return stream(c, async (s) => {
+    let finish: () => void = () => {};
+    const closed = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+
+    const unsubscribe = subscribeToTrace(traceId, ({ stage }) => {
+      void s.write(
+        `${JSON.stringify({ type: "stage", at: stage.at, message: stage.label, data: stage })}\n`,
+      );
+      // The last stage a job emits. Give the write a tick to flush before ending.
+      if (stage.stage === "job-completed") setTimeout(finish, 50);
+    });
+
+    const timeout = setTimeout(finish, TRACE_TIMEOUT_MS);
+    s.onAbort(finish);
+
+    try {
+      await closed;
+    } finally {
+      clearTimeout(timeout);
+      unsubscribe();
+    }
+  });
 });
 
 /* ------------------------------------------------------------------ *

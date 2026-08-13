@@ -12,6 +12,7 @@
     "keygen": "tsx scripts/keygen.ts",
     "test:flow": "tsx scripts/test-flow.ts",
     "tx:log": "tsx scripts/tx-history.ts",
+    "test:trace": "tsx scripts/test-trace.ts",
     "optin": "tsx scripts/optin.ts",
     "scenarios": "tsx scripts/dev-scenarios.ts",
     "simulate": "tsx scripts/dev-simulate.ts"

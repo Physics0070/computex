@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { api } from "./api";
 import type { Catalog, Health, Job, Provider, Recommendation, Stats } from "./types";
 import { Badge, Dot } from "./ui";
+import { WalletButton } from "./components/WalletButton";
 import { Marketplace } from "./views/Marketplace";
 import { NewJob } from "./views/NewJob";
 import { JobsTable } from "./views/Jobs";
@@ -145,12 +146,15 @@ export default function App() {
             </h1>
           </div>
 
-          <div className="hidden items-center gap-2 sm:flex">
-            <Badge tone="warn">compute simulated</Badge>
-            <Badge tone="ok">
-              <Dot tone="ok" />
-              payments real
-            </Badge>
+          <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-2 sm:flex">
+              <Badge tone="warn">compute simulated</Badge>
+              <Badge tone="ok">
+                <Dot tone="ok" />
+                payments real
+              </Badge>
+            </div>
+            <WalletButton />
           </div>
         </header>
 

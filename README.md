@@ -164,6 +164,32 @@ npm run test:flow      # 402 -> sign -> verify -> settle -> confirm tx via the i
 
 ---
 
+## Pay with your own wallet (Pera)
+
+Click **Connect Pera** in the header and the browser performs the x402 flow itself: it takes the 402, builds the USDC transfer, sends it to your phone for approval, and retries. The server holds no key on this path.
+
+With no wallet connected, jobs are charged to the shared server-side payer instead. The panel under **Pay & Run** always says which account is about to be charged.
+
+### What your wallet needs
+
+The account must be on **Algorand Testnet**, hold a little ALGO, and be **opted in to USDC** (ASA `10458941`) with a balance — the same three requirements as the server payer, for the same reasons.
+
+The fastest route for a demo is to import the payer account you already funded: in Pera, *Add account → Import → Recover from passphrase*, then paste the 25 words from `PAYER_MNEMONIC` in your `.env`. It is already funded and opted in. Enable Testnet under *Settings → Developer Settings → Node Settings*.
+
+Otherwise create a fresh account in Pera and take it through the same funding steps as [step 4](#4-fund-the-testnet-accounts).
+
+### How it works
+
+| Piece | What it does |
+| --- | --- |
+| [`client/src/wallet.ts`](client/src/wallet.ts) | Adapts Pera to `ClientAvmSigner`, the two-member interface `@x402/avm` expects |
+| [`client/src/walletPay.ts`](client/src/walletPay.ts) | The x402 flow in the browser — same events as the server payer, so the UI is shared |
+| `GET /api/trace/:id` | Streams job stages to the wallet path |
+
+That last one exists because the x402 middleware buffers the protected route's body so it can settle afterwards, which makes streaming out of `/api/compute` impossible. The browser opens the trace stream first and passes the same id on its POST, so the state machine still animates live. `npm run test:trace` asserts exactly that — including that stages arrive spread over the job's runtime rather than dumped at the end.
+
+---
+
 ## Deploy
 
 The whole app ships as **one service**: the server serves the built frontend, so the browser calls `/api` on its own origin — no CORS, no proxy, one URL.
@@ -235,6 +261,7 @@ npm run test:flow     # full golden path, ending with an indexer lookup of the t
 npm run scenarios     # recommendation + Agent Mode parsing, no network
 npm run simulate      # compute simulation and job store, no payment
 npm run tx:log        # regenerate TRANSACTIONS.md from the chain
+npm run test:trace    # the wallet path's plumbing: live stage stream + paid job
 ```
 
 `test:flow` asserts the whole chain: health → 402 → sign → retry → settle → transaction id → **confirmed on Algorand Testnet via the indexer**. It never trusts the server's word for the transaction id.
@@ -314,7 +341,10 @@ computex/
    └─ src/
       ├─ App.tsx            Console shell + navigation
       ├─ api.ts             API client + NDJSON stream reader
-      ├─ components/        RunFlow (payment state machine), GPU cards
+      ├─ wallet.ts          Pera → ClientAvmSigner adapter
+      ├─ walletPay.ts       x402 flow in the browser (wallet path)
+      ├─ walletContext.tsx  Connected session, shared by header and RunFlow
+      ├─ components/        RunFlow (payment state machine), WalletButton, GPU cards
       └─ views/             Marketplace, NewJob, Jobs, Providers, AgentMode
 ```
 
@@ -323,6 +353,6 @@ computex/
 ## Prototype boundaries
 
 - GPU execution, provider fleets, availability and historical revenue are **mock**. Everything produced by a job is tagged `simulated: true`.
-- The payer runs server-side so the browser never holds a key. In production this belongs in the user's wallet — swap `toClientAvmSigner` for a wallet-backed `ClientAvmSigner` and `payer.ts` is otherwise unchanged.
+- Two payment paths ship. **Connect Pera** and the browser signs with your own wallet — the server never sees a key, which is how a real product works. With nothing connected it falls back to the shared server-side payer, so the demo still runs for someone who has no testnet account.
 - Jobs live in memory and reset when the server restarts.
 - **Payments, settlement and transaction IDs are real** and verifiable on Algorand Testnet.
